@@ -752,9 +752,7 @@ public class PorePlayer extends PoreHumanEntity implements org.bukkit.entity.Pla
     public void setResourcePack(String url) {
         try {
             getHandle().sendResourcePack(ResourcePacks.fromUrl(new URL(url)));
-        } catch (FileNotFoundException swallow) {
-            //TODO: okay to swallow?
-        } catch (MalformedURLException swallow) {
+        } catch (FileNotFoundException | MalformedURLException swallow) {
             //TODO: okay to swallow?
         }
     }

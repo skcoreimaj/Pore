@@ -143,7 +143,7 @@ public final class PoreEventWrapper {
 
     private static <P extends Event, S extends org.spongepowered.api.event.Event> Registration<P, S> create(
             Class<P> pore, Class<S> sponge) {
-        return new Registration<P, S>(pore, sponge);
+        return new Registration<>(pore, sponge);
     }
 
     private static class Registration<P extends Event,
@@ -168,7 +168,7 @@ public final class PoreEventWrapper {
                     this.constructor = PoreConstructors.create(pore, sponge);
                 }
 
-                listener = new PoreEventHandler<S>(priority, constructor);
+                listener = new PoreEventHandler<>(priority, constructor);
                 listeners.put(priority, listener);
             }
 
@@ -180,9 +180,7 @@ public final class PoreEventWrapper {
         public void unregister() {
             EventManager manager = Pore.getGame().getEventManager();
 
-            for (Object listener : listeners.values()) {
-                manager.unregister(listener);
-            }
+            listeners.values().forEach(manager::unregister);
         }
 
         @Override

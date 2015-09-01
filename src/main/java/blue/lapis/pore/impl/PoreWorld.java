@@ -183,7 +183,7 @@ public class PoreWorld extends PoreWrapper<World> implements org.bukkit.World {
 
     @Override
     public Chunk[] getLoadedChunks() {
-        List<Chunk> chunks = new ArrayList<Chunk>();
+        List<Chunk> chunks = new ArrayList<>();
         for (org.spongepowered.api.world.Chunk chunk : getHandle().getLoadedChunks()) {
             chunks.add(PoreChunk.of(chunk));
         }
@@ -389,11 +389,9 @@ public class PoreWorld extends PoreWrapper<World> implements org.bukkit.World {
         // with that)
         // see getLivingEntities() for explanation
         List<Player> players = Lists.newArrayList();
-        for (org.spongepowered.api.entity.Entity e : getHandle().getEntities()) {
-            if (e instanceof org.spongepowered.api.entity.player.Player) {
-                players.add(PorePlayer.of((org.spongepowered.api.entity.player.Player) e));
-            }
-        }
+        players.addAll(getHandle().getEntities().stream()
+                .filter(e -> e instanceof org.spongepowered.api.entity.player.Player)
+                .map(e -> PorePlayer.of((org.spongepowered.api.entity.player.Player) e)).collect(Collectors.toList()));
         return players;
     }
 

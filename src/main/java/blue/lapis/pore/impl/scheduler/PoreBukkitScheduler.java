@@ -35,7 +35,6 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scheduler.BukkitWorker;
 import org.spongepowered.api.service.scheduler.SchedulerService;
-import org.spongepowered.api.service.scheduler.Task;
 import org.spongepowered.api.service.scheduler.TaskBuilder;
 
 import java.util.List;
@@ -75,7 +74,7 @@ public class PoreBukkitScheduler implements BukkitScheduler {
     @Override
     public <T> Future<T> callSyncMethod(Plugin plugin, Callable<T> task) {
         validate(plugin, task);
-        PoreFuture<T> future = new PoreFuture<T>(task);
+        PoreFuture<T> future = new PoreFuture<>(task);
         future.handle = newTask().execute(future).submit(Pore.getPlugin(plugin));
         return future;
     }
@@ -87,16 +86,13 @@ public class PoreBukkitScheduler implements BukkitScheduler {
 
     @Override
     public void cancelTasks(Plugin plugin) {
-        for (Task task : getScheduler().getScheduledTasks(Pore.getPlugin(plugin))) {
-            task.cancel();
-        }
+        getScheduler().getScheduledTasks(Pore.getPlugin(plugin))
+                .forEach(org.spongepowered.api.service.scheduler.Task::cancel);
     }
 
     @Override
     public void cancelAllTasks() {
-        for (Task task : getScheduler().getScheduledTasks()) {
-            task.cancel();
-        }
+        getScheduler().getScheduledTasks().forEach(org.spongepowered.api.service.scheduler.Task::cancel);
     }
 
     @Override

@@ -82,11 +82,7 @@ public class BlockDataConverter implements DataConverter<Location> {
                 Constructor<?> c = clazz.getDeclaredConstructors()[0];
                 c.setAccessible(true);
                 return (DataTypeConverter) c.newInstance();
-            } catch (IllegalAccessException ex) {
-                e = ex;
-            } catch (InstantiationException ex) {
-                e = ex;
-            } catch (InvocationTargetException ex) {
+            } catch (IllegalAccessException | InstantiationException | InvocationTargetException ex) {
                 e = ex;
             }
             Pore.getLogger().error("Failed to instantiate " + clazz.getName());
@@ -127,14 +123,12 @@ public class BlockDataConverter implements DataConverter<Location> {
     public void setDataValue(Location target, byte dataValue) {
         DataTypeConverter converter = getConverter(target.getBlockType());
         Collection<AbstractDataValue> data = converter.of(dataValue);
-        for (AbstractDataValue datum : data) {
-            if (datum.getValue() != AbstractDataValue.ABSENT) {
-                DataManipulator dm = (DataManipulator) target.getOrCreate(datum.getDataClass()).get();
-                if (dm instanceof VariantData) {
-                    ((VariantData) dm).type().set(datum.getValue());
-                }
+        data.stream().filter(datum -> datum.getValue() != AbstractDataValue.ABSENT).forEach(datum -> {
+            DataManipulator dm = (DataManipulator) target.getOrCreate(datum.getDataClass()).get();
+            if (dm instanceof VariantData) {
+                ((VariantData) dm).type().set(datum.getValue());
             }
-        }
+        });
     }
 
     @SuppressWarnings("rawtypes")

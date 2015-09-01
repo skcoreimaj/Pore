@@ -59,7 +59,7 @@ public class BTDCTestUtil {
                                                                                Class<T> dataClass, byte inputByte,
                                                                                V expectedValue, boolean invert)
             throws Exception {
-        AbstractDataValue<T, V> output = new AbstractDataValue<T, V>(dataClass, expectedValue);
+        AbstractDataValue<T, V> output = new AbstractDataValue<>(dataClass, expectedValue);
         Collection<AbstractDataValue<T, V>> outputColl = Collections.singletonList(output);
         testAbstraction(blockType, inputByte, outputColl, invert);
     }
@@ -74,7 +74,7 @@ public class BTDCTestUtil {
                                                                                  Class<T> dataClass, byte rawData,
                                                                                  V abstractedData, boolean invert)
             throws Exception {
-        AbstractDataValue<T, V> input = new AbstractDataValue<T, V>(dataClass, abstractedData);
+        AbstractDataValue<T, V> input = new AbstractDataValue<>(dataClass, abstractedData);
         Collection<AbstractDataValue<T, V>> inputColl = Collections.singletonList(input);
         testDeabstraction(blockType, rawData, inputColl, invert);
     }

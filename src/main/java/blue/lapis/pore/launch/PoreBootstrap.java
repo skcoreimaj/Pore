@@ -64,9 +64,7 @@ public class PoreBootstrap {
                     new URL(location.getProtocol(), location.getHost(), location.getPort(), path));
             Class<?> poreClass = Class.forName(IMPLEMENTATION_CLASS, true, loader);
             this.pore = (PoreEventManager) injector.getInstance(poreClass);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Failed to load Pore implementation", e);
-        } catch (MalformedURLException e) {
+        } catch (ClassNotFoundException | MalformedURLException e) {
             throw new RuntimeException("Failed to load Pore implementation", e);
         }
     }
