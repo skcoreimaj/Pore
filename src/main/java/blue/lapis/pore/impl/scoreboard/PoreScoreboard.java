@@ -32,10 +32,7 @@ import blue.lapis.pore.converter.wrapper.WrapperConverter;
 import blue.lapis.pore.impl.PoreOfflinePlayer;
 import blue.lapis.pore.util.PoreWrapper;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Sets;
 import org.apache.commons.lang3.NotImplementedException;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -52,6 +49,7 @@ import org.spongepowered.api.text.Texts;
 import org.spongepowered.api.util.TextMessageException;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PoreScoreboard extends PoreWrapper<Scoreboard> implements org.bukkit.scoreboard.Scoreboard {
 
@@ -93,26 +91,12 @@ public class PoreScoreboard extends PoreWrapper<Scoreboard> implements org.bukki
         Optional<Criterion> c = Pore.getGame().getRegistry()
                 .getType(Criterion.class, criteria); //TODO: no idea whether this is right
         checkArgument(c.isPresent(), "Invalid criterion");
-        return Sets.newHashSet(Collections2.transform(getHandle().getObjectivesByCriteria(c.get()),
-                new Function<org.spongepowered.api.scoreboard.objective.Objective, Objective>() {
-                    @Override
-                    public Objective apply(org.spongepowered.api.scoreboard.objective.Objective obj) {
-                        return PoreObjective.of(obj);
-                    }
-                }
-        ));
+        return getHandle().getObjectivesByCriteria(c.get()).stream().map(PoreObjective::of).collect(Collectors.toSet());
     }
 
     @Override
     public Set<Objective> getObjectives() {
-        return Sets.newHashSet(Collections2.transform(getHandle().getObjectives(),
-                new Function<org.spongepowered.api.scoreboard.objective.Objective, Objective>() {
-                    @Override
-                    public Objective apply(org.spongepowered.api.scoreboard.objective.Objective obj) {
-                        return PoreObjective.of(obj);
-                    }
-                }
-        ));
+        return getHandle().getObjectives().stream().map(PoreObjective::of).collect(Collectors.toSet());
     }
 
     @Override
@@ -133,15 +117,8 @@ public class PoreScoreboard extends PoreWrapper<Scoreboard> implements org.bukki
     public Set<Score> getScores(String entry) throws IllegalArgumentException {
         checkArgument(entry != null, "Entry must not be null");
         try {
-            //noinspection ConstantConditions
-            return Sets.newHashSet(Collections2.transform(getHandle().getScores(Texts.legacy().from(entry)),
-                    new Function<org.spongepowered.api.scoreboard.Score, Score>() {
-                        @Override
-                        public Score apply(org.spongepowered.api.scoreboard.Score score) {
-                            return PoreScore.of(score);
-                        }
-                    }
-            ));
+            return getHandle().getScores(Texts.legacy().from(entry)).stream().map(PoreScore::of)
+                    .collect(Collectors.toSet());
         } catch (TextMessageException ex) {
             throw new IllegalArgumentException(ex);
         }
@@ -194,14 +171,7 @@ public class PoreScoreboard extends PoreWrapper<Scoreboard> implements org.bukki
 
     @Override
     public Set<Team> getTeams() {
-        return Sets.newHashSet(Collections2.transform(getHandle().getTeams(),
-                new Function<org.spongepowered.api.scoreboard.Team, Team>() {
-                    @Override
-                    public Team apply(org.spongepowered.api.scoreboard.Team team) {
-                        return PoreTeam.of(team);
-                    }
-                }
-        ));
+        return getHandle().getTeams().stream().map(PoreTeam::of).collect(Collectors.toSet());
     }
 
     @Override
@@ -216,13 +186,7 @@ public class PoreScoreboard extends PoreWrapper<Scoreboard> implements org.bukki
     @Override
     @SuppressWarnings("deprecation")
     public Set<OfflinePlayer> getPlayers() {
-        return Sets.newHashSet(Collections2.transform(getEntries(),
-                new Function<String, OfflinePlayer>() {
-                    public OfflinePlayer apply(String entry) {
-                        return Bukkit.getOfflinePlayer(entry);
-                    }
-                }
-        ));
+        return getEntries().stream().map(Bukkit::getOfflinePlayer).collect(Collectors.toSet());
     }
 
     @Override

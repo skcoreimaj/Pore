@@ -31,7 +31,6 @@ import blue.lapis.pore.Pore;
 import blue.lapis.pore.util.constructor.PoreConstructors;
 import blue.lapis.pore.util.constructor.SimpleConstructor;
 
-import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -44,9 +43,11 @@ import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+//TODO: probably convert this, not sure how it works exactly (~caseif)
 final class CachedWrapperConverter<B> implements Function<Object, B> {
 
     private final LoadingCache<Object, Object> cache = CacheBuilder.newBuilder()

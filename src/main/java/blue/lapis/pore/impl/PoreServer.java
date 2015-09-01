@@ -410,7 +410,7 @@ public class PoreServer extends PoreWrapper<org.spongepowered.api.Server> implem
 
     @Override
     public List<World> getWorlds() {
-        return PoreCollections.<org.spongepowered.api.world.World, World>transformToList(getHandle().getWorlds(),
+        return PoreCollections.<org.spongepowered.api.world.World, World>transform(getHandle().getWorlds(),
                 WrapperConverter.<org.spongepowered.api.world.World, PoreWorld>getConverter());
     }
 

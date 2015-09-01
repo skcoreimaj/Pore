@@ -35,8 +35,6 @@ import blue.lapis.pore.converter.vector.LocationConverter;
 import blue.lapis.pore.converter.wrapper.WrapperConverter;
 import blue.lapis.pore.util.ProjectileUtil;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import org.apache.commons.lang3.NotImplementedException;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -64,6 +62,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PoreLivingEntity extends PoreEntity implements LivingEntity {
 
@@ -243,14 +242,7 @@ public class PoreLivingEntity extends PoreEntity implements LivingEntity {
     public boolean addPotionEffects(Collection<PotionEffect> effects) {
         List<org.spongepowered.api.potion.PotionEffect> effectList
                 = getHandle().getOrCreate(POTION_EFFECT_DATA).get().effects().get();
-        effectList.addAll(Collections2.transform(effects,
-                new Function<PotionEffect, org.spongepowered.api.potion.PotionEffect>() {
-                    @Override
-                    public org.spongepowered.api.potion.PotionEffect apply(PotionEffect input) {
-                        return PotionEffectConverter.of(input);
-                    }
-                }
-        ));
+        effectList.addAll(effects.stream().map(PotionEffectConverter::of).collect(Collectors.toList()));
         return getHandle().offer(Keys.POTION_EFFECTS, effectList).getType()
                 == DataTransactionResult.Type.SUCCESS;
     }
@@ -285,14 +277,8 @@ public class PoreLivingEntity extends PoreEntity implements LivingEntity {
 
     @Override
     public Collection<PotionEffect> getActivePotionEffects() {
-        return Collections2.transform(getHandle().get(Keys.POTION_EFFECTS).get(),
-                new Function<org.spongepowered.api.potion.PotionEffect, PotionEffect>() {
-                    @Override
-                    public PotionEffect apply(org.spongepowered.api.potion.PotionEffect input) {
-                        return PotionEffectConverter.of(input);
-                    }
-                }
-        );
+        return getHandle().get(Keys.POTION_EFFECTS).get().stream().map(PotionEffectConverter::of)
+                .collect(Collectors.toList());
     }
 
     @Override

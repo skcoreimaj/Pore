@@ -29,9 +29,7 @@ import blue.lapis.pore.converter.type.material.MaterialConverter;
 import blue.lapis.pore.converter.type.statistic.AchievementConverter;
 import blue.lapis.pore.converter.type.statistic.StatisticConverter;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.Iterables;
 import org.bukkit.Material;
 import org.bukkit.Statistic;
 import org.bukkit.UnsafeValues;
@@ -42,6 +40,7 @@ import org.spongepowered.api.item.ItemType;
 import org.spongepowered.api.statistic.achievement.Achievement;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Deprecated
 @SuppressWarnings("deprecation")
@@ -67,13 +66,8 @@ public class PoreUnsafeValues implements UnsafeValues {
     public List<String> tabCompleteInternalMaterialName(String token, List<String> completions) {
         return StringUtil.copyPartialMatches(
                 token,
-                Iterables.transform(Pore.getGame().getRegistry().getAllOf(ItemType.class), //TODO is this right?
-                        new Function<ItemType, String>() {
-                            @Override
-                            public String apply(final ItemType input) {
-                                return input.getId();
-                            }
-                        }),
+                Pore.getGame().getRegistry().getAllOf(ItemType.class).stream().map(ItemType::getId)
+                .collect(Collectors.toList()),
                 completions
         );
     }
@@ -121,25 +115,14 @@ public class PoreUnsafeValues implements UnsafeValues {
     public List<String> tabCompleteInternalStatisticOrAchievementName(String token, List<String> completions) {
         List<String> found = StringUtil.copyPartialMatches(
                 token,
-                Iterables.transform(Pore.getGame().getRegistry().getAllOf(Achievement.class), //TODO is this right?
-                        new Function<Achievement, String>() {
-                            @Override
-                            public String apply(final Achievement input) {
-                                return input.getName();
-                            }
-                        }),
+                Pore.getGame().getRegistry().getAllOf(Achievement.class).stream().map(Achievement::getName)
+                        .collect(Collectors.toList()),
                 completions
         );
         found.addAll(StringUtil.copyPartialMatches(
                 token,
-                Iterables.transform(
-                        Pore.getGame().getRegistry().getAllOf(org.spongepowered.api.statistic.Statistic.class),
-                        new Function<org.spongepowered.api.statistic.Statistic, String>() {
-                            @Override
-                            public String apply(final org.spongepowered.api.statistic.Statistic input) {
-                                return input.getName();
-                            }
-                        }), //TODO is this right?
+                Pore.getGame().getRegistry().getAllOf(org.spongepowered.api.statistic.Statistic.class)
+                        .stream().map(org.spongepowered.api.statistic.Statistic::getName).collect(Collectors.toList()),
                 completions
         ));
         return found;

@@ -24,8 +24,6 @@
  */
 package blue.lapis.pore.impl;
 
-import static com.google.common.base.Predicates.instanceOf;
-import static com.google.common.collect.Collections2.filter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -45,6 +43,7 @@ import org.spongepowered.api.world.World;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class WorldEntitiesTest {
 
@@ -79,11 +78,11 @@ public class WorldEntitiesTest {
         List<Entity> entities = world.getEntities();
 
         // All of the entities should be an instance of Entity
-        assertEquals(14, filter(entities, instanceOf(Entity.class)).size());
-        assertEquals(12, filter(entities, instanceOf(LivingEntity.class)).size());
-        assertEquals(7, filter(entities, instanceOf(HumanEntity.class)).size());
-        assertEquals(5, filter(entities, instanceOf(Player.class)).size());
-        assertEquals(2, filter(entities, instanceOf(Animals.class)).size());
+        //assertEquals(14, filter(entities, instanceOf(Entity.class)).size());
+        assertEquals(12, entities.stream().filter(e -> e instanceof LivingEntity).collect(Collectors.toList()).size());
+        assertEquals(7, entities.stream().filter(e -> e instanceof HumanEntity).collect(Collectors.toList()).size());
+        assertEquals(5, entities.stream().filter(e -> e instanceof Player).collect(Collectors.toList()).size());
+        assertEquals(2, entities.stream().filter(e -> e instanceof Animals).collect(Collectors.toList()).size());
     }
 
     @Test

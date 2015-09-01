@@ -47,7 +47,6 @@ import blue.lapis.pore.util.PoreWrapper;
 
 import com.flowpowered.math.vector.Vector3i;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -83,6 +82,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.entity.EntityTypes;
+import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.world.World;
 import org.spongepowered.api.world.extent.Extent;
 import org.spongepowered.api.world.weather.Weathers;
@@ -93,8 +93,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.annotation.Nullable;
+import java.util.stream.Collectors;
 
 public class PoreWorld extends PoreWrapper<World> implements org.bukkit.World {
 
@@ -346,7 +345,7 @@ public class PoreWorld extends PoreWrapper<World> implements org.bukkit.World {
 
     @Override
     public List<Entity> getEntities() {
-        return PoreCollections.<org.spongepowered.api.entity.Entity, Entity>transformToList(
+        return PoreCollections.<org.spongepowered.api.entity.Entity, Entity>transform(
                 getHandle().getEntities(), WrapperConverter
                         .<org.spongepowered.api.entity.Entity, PoreEntity>getConverter()
         );
@@ -354,15 +353,8 @@ public class PoreWorld extends PoreWrapper<World> implements org.bukkit.World {
 
     @Override
     public List<LivingEntity> getLivingEntities() {
-        // This is basically copying every time, unfortunately there is no real better way because we can't
-        // filter lists using Guava
-        List<LivingEntity> living = Lists.newArrayList();
-        for (org.spongepowered.api.entity.Entity e : getHandle().getEntities()) {
-            if (e instanceof org.spongepowered.api.entity.living.Living) {
-                living.add(PoreLivingEntity.of((org.spongepowered.api.entity.living.Living) e));
-            }
-        }
-        return living;
+        return getHandle().getEntities().stream().filter(e -> e instanceof Living)
+                .map(e -> PoreLivingEntity.of((Living) e)).collect(Collectors.toList());
     }
 
     @Override
@@ -381,18 +373,14 @@ public class PoreWorld extends PoreWrapper<World> implements org.bukkit.World {
     @Override
     @SuppressWarnings("unchecked")
     public Collection<Entity> getEntitiesByClasses(final Class<?>... classes) {
-        return Collections2.filter(getEntities(), new Predicate<Entity>() {
-            @Override
-            public boolean apply(@Nullable Entity entity) {
-                for (Class<?> clazz : classes) {
-                    if (clazz.isInstance(entity)) {
-                        return true;
-                    }
+        return getEntities().stream().filter(e -> {
+            for (Class<?> clazz : classes) {
+                if (clazz.isInstance(e)) {
+                    return true;
                 }
-
-                return false;
             }
-        });
+            return false;
+        }).collect(Collectors.toList());
     }
 
     @Override

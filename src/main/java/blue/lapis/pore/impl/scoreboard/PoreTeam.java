@@ -31,10 +31,7 @@ import blue.lapis.pore.converter.wrapper.WrapperConverter;
 import blue.lapis.pore.impl.PoreOfflinePlayer;
 import blue.lapis.pore.util.PoreWrapper;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scoreboard.NameTagVisibility;
@@ -45,6 +42,7 @@ import org.spongepowered.api.text.Texts;
 import org.spongepowered.api.util.TextMessageException;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PoreTeam extends PoreWrapper<Team> implements org.bukkit.scoreboard.Team {
 
@@ -164,27 +162,13 @@ public class PoreTeam extends PoreWrapper<Team> implements org.bukkit.scoreboard
     @Override
     public Set<OfflinePlayer> getPlayers() throws IllegalStateException {
         checkState();
-        return Sets.newHashSet(Collections2.transform(getHandle().getUsers(),
-                new Function<User, OfflinePlayer>() {
-                    @Override
-                    public OfflinePlayer apply(User user) {
-                        return PoreOfflinePlayer.of(user);
-                    }
-                }
-        ));
+        return getHandle().getUsers().stream().map(PoreOfflinePlayer::of).collect(Collectors.toSet());
     }
 
     @Override
     public Set<String> getEntries() throws IllegalStateException {
         checkState();
-        return Sets.newHashSet(Collections2.transform(getHandle().getUsers(),
-                new Function<User, String>() {
-                    @Override
-                    public String apply(User user) {
-                        return user.getName();
-                    }
-                }
-        ));
+        return getHandle().getUsers().stream().map(User::getName).collect(Collectors.toSet());
     }
 
     @Override

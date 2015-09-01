@@ -36,9 +36,6 @@ import blue.lapis.pore.converter.data.DataTypeConverter;
 import blue.lapis.pore.converter.data.block.BlockDataConverter;
 import blue.lapis.pore.impl.block.PoreBlock;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicates;
-import com.google.common.collect.FluentIterable;
 import org.bukkit.block.Block;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.data.manipulator.DataManipulator;
@@ -50,6 +47,8 @@ import org.spongepowered.api.world.extent.Extent;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 // This is kind of a behemoth of a class. Lots and lots of overloading.
 // Sorry for not documenting it, but honestly I don't have the patience for that right now.
@@ -117,32 +116,21 @@ public class BTDCTestUtil {
                                          boolean invert) throws Exception {
         Location loc = new Location(mock(Extent.class), 0, 0, 0);
         when(loc.getBlockType()).thenReturn(blockType);
-        /*for (AbstractDataValue datum : abstractedData) {
-            DataManipulator<?> spongeDatum = datum.getValue() != AbstractDataValue.ABSENT
-                    ? (DataManipulator<?>) mock(datum.getDataClass()) : null;
-            if (spongeDatum instanceof SingleValueData) {
-                when(((SingleValueData) spongeDatum).getValue()).thenReturn(datum.getValue());
+
+        Collection<DataManipulator<?, ?>> manipulators = abstractedData.stream()
+                .map((Function<AbstractDataValue<? extends DataManipulator, ?>, DataManipulator<?, ?>>) datum -> {
+            if (datum.getValue() == AbstractDataValue.ABSENT) {
+                return null;
             }
-            when(loc.getData((Class<DataManipulator>) datum.getDataClass()))
-                    .thenReturn(Optional.<DataManipulator>fromNullable(spongeDatum));
-        }*/
-        Collection<DataManipulator<?, ?>> manipulators = FluentIterable.from(abstractedData)
-                .transform(new Function<AbstractDataValue<? extends DataManipulator, ?>, DataManipulator<?, ?>>() {
-                    public DataManipulator<?, ?> apply(AbstractDataValue datum) {
-                        if (datum.getValue() == AbstractDataValue.ABSENT) {
-                            return null;
-                        }
-                        DataManipulator<?, ?> dm = (DataManipulator<?, ?>) mock(datum.getDataClass());
-                        if (dm instanceof VariantData) {
-                            Value value = mock(Value.class);
-                            when(value.get()).thenReturn(datum.getValue());
-                            when(((VariantData) dm).type()).thenReturn(value);
-                        }
-                        return dm;
-                    }
-                })
-                .filter(Predicates.notNull())
-                .toList();
+            DataManipulator<?, ?> dm = (DataManipulator<?, ?>) mock(datum.getDataClass());
+            if (dm instanceof VariantData) {
+                Value value = mock(Value.class);
+                when(value.get()).thenReturn(datum.getValue());
+                when(((VariantData) dm).type()).thenReturn(value);
+            }
+            return dm;
+        }).collect(Collectors.toList());
+
         when(loc.getContainers()).thenReturn(manipulators);
         Block block = PoreBlock.of(loc);
         if (invert) {

@@ -27,10 +27,7 @@ package blue.lapis.pore.impl.command;
 import blue.lapis.pore.Pore;
 import blue.lapis.pore.command.PoreCommandCallable;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.NotImplementedException;
 import org.bukkit.Server;
@@ -45,6 +42,7 @@ import org.spongepowered.api.util.command.CommandMapping;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PoreCommandMap extends SimpleCommandMap {
 
@@ -101,25 +99,9 @@ public class PoreCommandMap extends SimpleCommandMap {
     @Override
     public Collection<Command> getCommands() {
         // TODO: Support all commands
-        return Collections2.transform(Collections2.filter(handle.getCommands(),
-                PORE_COMMAND_CALLABLE), GET_PORE_COMMAND);
+        return handle.getCommands().stream().filter(cmd -> cmd instanceof PoreCommandCallable)
+                .map(input -> ((PoreCommandCallable) input).getHandle()).collect(Collectors.toList());
     }
-
-    private static final Predicate<CommandMapping> PORE_COMMAND_CALLABLE = new Predicate<CommandMapping>() {
-
-        @Override
-        public boolean apply(CommandMapping input) {
-            return input.getCallable() instanceof PoreCommandCallable;
-        }
-    };
-
-    private static final Function<CommandMapping, Command> GET_PORE_COMMAND = new Function<CommandMapping, Command>() {
-
-        @Override
-        public Command apply(CommandMapping input) {
-            return ((PoreCommandCallable) input).getHandle();
-        }
-    };
 
     @Override
     public synchronized void clearCommands() {

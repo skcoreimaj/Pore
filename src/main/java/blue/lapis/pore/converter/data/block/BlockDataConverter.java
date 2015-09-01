@@ -36,8 +36,6 @@ import blue.lapis.pore.converter.data.block.type.Log2DataConverter;
 import blue.lapis.pore.converter.data.block.type.LogDataConverter;
 import blue.lapis.pore.converter.data.block.type.PlanksDataConverter;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.spongepowered.api.block.BlockState;
@@ -51,6 +49,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class BlockDataConverter implements DataConverter<Location> {
 
@@ -99,25 +98,16 @@ public class BlockDataConverter implements DataConverter<Location> {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public byte getDataValue(Collection<DataManipulator<?, ?>> manipulators, BlockType target) {
         final DataTypeConverter converter = getConverter(target);
-        Collection<DataManipulator<?, ?>> data = Collections2.filter(manipulators,
-                new Predicate<DataManipulator<?, ?>>() {
-                    @Override
-                    public boolean apply(DataManipulator<?, ?> input) {
-                        if (input == null) {
-                            return false;
-                        }
-                        try {
-                            Class<? extends DataManipulator<?, ?>> clazz = (Class<? extends DataManipulator<?, ?>>)
-                                    Class.forName(input.getClass().getName().split("\\$")[0]);
-                            return converter.getApplicableDataTypes().contains(clazz);
-                        } catch (ClassNotFoundException ex) {
-                            ex.printStackTrace();
-                            return false;
-                        }
-                    }
-                }
-        );
-        return converter.of(data);
+        return converter.of(manipulators.stream().filter(m -> m != null).filter(m -> {
+            try {
+                Class<? extends DataManipulator<?, ?>> clazz = (Class<? extends DataManipulator<?, ?>>)
+                        Class.forName(m.getClass().getName().split("\\$")[0]);
+                return converter.getApplicableDataTypes().contains(clazz);
+            } catch (ClassNotFoundException ex) {
+                ex.printStackTrace();
+                return false;
+            }
+        }).collect(Collectors.toList()));
     }
 
     @SuppressWarnings("unchecked")

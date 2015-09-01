@@ -135,7 +135,6 @@ import blue.lapis.pore.impl.inventory.PorePlayerInventory;
 import blue.lapis.pore.impl.util.PoreCachedServerIcon;
 import blue.lapis.pore.util.PoreWrapper;
 
-import com.google.common.base.Function;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.block.tileentity.Banner;
 import org.spongepowered.api.block.tileentity.CommandBlock;
@@ -245,6 +244,8 @@ import org.spongepowered.api.util.command.source.ConsoleSource;
 import org.spongepowered.api.world.Chunk;
 import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.World;
+
+import java.util.function.Function;
 
 public final class WrapperConverter {
 
