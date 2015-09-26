@@ -39,8 +39,11 @@ public class PoreBanEntry extends PoreWrapper<Ban> implements BanEntry {
         return WrapperConverter.of(PoreBanEntry.class, handle);
     }
 
-    private String target, source, reason;
-    private Date created, expiration;
+    private String target;
+    private String source;
+    private String reason;
+    private Date created;
+    private Date expiration;
 
     protected PoreBanEntry(Ban handle) {
         super(handle);
