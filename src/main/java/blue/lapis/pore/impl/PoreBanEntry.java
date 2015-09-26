@@ -24,14 +24,18 @@
  */
 package blue.lapis.pore.impl;
 
+import blue.lapis.pore.Pore;
 import blue.lapis.pore.converter.wrapper.WrapperConverter;
 import blue.lapis.pore.util.PoreText;
 import blue.lapis.pore.util.PoreWrapper;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.bukkit.BanEntry;
+import org.spongepowered.api.service.ban.BanService;
 import org.spongepowered.api.util.ban.Ban;
+import org.spongepowered.api.util.ban.BanTypes;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Date;
 
 public class PoreBanEntry extends PoreWrapper<Ban> implements BanEntry {
@@ -40,64 +44,108 @@ public class PoreBanEntry extends PoreWrapper<Ban> implements BanEntry {
         return WrapperConverter.of(PoreBanEntry.class, handle);
     }
 
-    protected PoreBanEntry(Ban handle) {
+    private String target;
+    private String source;
+    private String reason;
+    private Date created;
+    private Date expiration;
+
+    private final BanService banService;
+
+    protected PoreBanEntry(Ban handle, BanService banService) {
         super(handle);
+        this.banService = banService;
+        if (handle.getType() == BanTypes.IP) {
+            this.target = ((Ban.Ip) handle).getAddress().getCanonicalHostName();
+        } else {
+            this.target = ((Ban.Profile) handle).getProfile().getName();
+        }
+        if (handle.getBanSource().isPresent()) {
+            this.source = PoreText.convert(handle.getBanSource().get());
+        } else {
+            this.source = null;
+        }
+        this.reason = PoreText.convert(handle.getReason());
+        this.created = Date.from(handle.getCreationDate());
+        if (handle.getExpirationDate().isPresent()) {
+            this.expiration = Date.from(handle.getExpirationDate().get());
+        } else {
+            this.expiration = null;
+        }
     }
 
     @Override
     public String getTarget() {
-        throw new NotImplementedException("TODO");
+        return this.target;
     }
 
     @Override
     public Date getCreated() {
-        return Date.from(getHandle().getCreationDate());
+        return this.created;
     }
 
     @Override
     public void setCreated(Date created) {
-        throw new NotImplementedException("TODO");
+        this.created = created;
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public String getSource() {
-        if (!getHandle().getBanSource().isPresent()) {
-            return null;
-        }
-        return PoreText.convert(getHandle().getBanSource().get());
+        return this.source;
     }
 
     @Override
     public void setSource(String source) {
-        throw new NotImplementedException("TODO");
+        this.source = source;
     }
 
     @Override
     public Date getExpiration() {
-        if (!getHandle().getExpirationDate().isPresent()) {
-            return null;
-        }
-        return Date.from(getHandle().getExpirationDate().get());
+        return this.expiration;
     }
 
     @Override
     public void setExpiration(Date expiration) {
-        throw new NotImplementedException("TODO");
+        this.expiration = expiration;
     }
 
     @Override
     public String getReason() {
-        return getHandle().getReason().toString();
+        return this.reason;
     }
 
     @Override
     public void setReason(String reason) {
-        throw new NotImplementedException("TODO");
+        this.reason = reason;
     }
 
     @Override
     public void save() {
-        throw new NotImplementedException("TODO");
+        Ban.Builder builder = Ban.builder();
+
+        if (this.getHandle().getType() == BanTypes.IP) {
+            if (Pore.getGame().getServer().getPlayer(this.target).isPresent()) {
+                builder.profile(Pore.getGame().getServer().getPlayer(this.target).get().getProfile());
+            }
+        } else {
+            try {
+                builder.address(InetAddress.getByName(this.target));
+            } catch (UnknownHostException e) {
+                // if this happens someone somewhere will cry
+            }
+        }
+        if (reason != null) {
+            builder.reason(PoreText.convert(this.reason));
+        }
+        if (expiration != null) {
+            builder.expirationDate(this.expiration.toInstant());
+        }
+        if (source != null) {
+            if (Pore.getGame().getServer().getPlayer(this.source).isPresent()) {
+                builder.source(Pore.getGame().getServer().getPlayer(this.source).get());
+            }
+        }
+        this.banService.addBan(builder.build());
     }
 }

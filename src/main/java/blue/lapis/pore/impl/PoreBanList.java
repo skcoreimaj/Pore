@@ -24,15 +24,31 @@
  */
 package blue.lapis.pore.impl;
 
+import blue.lapis.pore.Pore;
+import blue.lapis.pore.util.PoreText;
+
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.NotImplementedException;
 import org.bukkit.BanEntry;
 import org.bukkit.BanList;
+import org.spongepowered.api.service.ban.BanService;
+import org.spongepowered.api.util.ban.Ban;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-//TODO: skeleton implementation
 public class PoreBanList implements BanList {
+
+    private final BanService banService;
+    private final Type type;
+
+    protected PoreBanList(BanService banService, Type type) {
+        this.banService = banService;
+        this.type = type;
+    }
 
     @Override
     public BanEntry getBanEntry(String target) {
@@ -41,21 +57,67 @@ public class PoreBanList implements BanList {
 
     @Override
     public BanEntry addBan(String target, String reason, Date expires, String source) {
-        throw new NotImplementedException("TODO");
+        Ban.Builder spongeBan = Ban.builder();
+        switch (this.type) {
+            case NAME:
+                try {
+                    spongeBan.address(InetAddress.getByName(target));
+                } catch (UnknownHostException e) {
+                    // if this happens someone somewhere will cry
+                }
+                break;
+            case IP:
+                if (Pore.getGame().getServer().getPlayer(target).isPresent()) {
+                    spongeBan.profile(Pore.getGame().getServer().getPlayer(target).get().getProfile());
+                }
+                break;
+        }
+        spongeBan.expirationDate(expires.toInstant());
+        if (Pore.getGame().getServer().getPlayer(source).isPresent()) {
+            spongeBan.source(Pore.getGame().getServer().getPlayer(source).get());
+        }
+        spongeBan.reason(PoreText.convert(reason));
+
+        return new PoreBanEntry(spongeBan.build(), banService);
     }
 
     @Override
     public Set<BanEntry> getBanEntries() {
-        throw new NotImplementedException("TODO");
+        Set<BanEntry> bans = Sets.newHashSet();
+
+        switch (type) {
+            case NAME:
+                bans.addAll(banService.getProfileBans().stream().map(PoreBanEntry::of).collect(Collectors.toList()));
+                break;
+            case IP:
+                bans.addAll(banService.getIpBans().stream().map(PoreBanEntry::of).collect(Collectors.toList()));
+                break;
+        }
+
+        return bans;
     }
 
     @Override
     public boolean isBanned(String target) {
-        throw new NotImplementedException("TODO");
+        return Pore.getGame().getServer().getPlayer(target).isPresent()
+                && this.banService.isBanned(Pore.getGame().getServer().getPlayer(target).get().getProfile());
     }
 
     @Override
     public void pardon(String target) {
-        throw new NotImplementedException("TODO");
+        switch (this.type) {
+            case NAME:
+                if (Pore.getGame().getServer().getPlayer(target).isPresent()) {
+                    this.banService.pardon(Pore.getGame().getServer().getPlayer(target).get().getProfile());
+                }
+                break;
+            case IP:
+                try {
+                    this.banService.pardon(InetAddress.getByName(target));
+                } catch (UnknownHostException e) {
+                    // if this happens someone somewhere will cry
+                }
+                break;
+        }
     }
 }
