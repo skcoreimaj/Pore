@@ -24,15 +24,25 @@
  */
 package blue.lapis.pore.impl;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.NotImplementedException;
 import org.bukkit.BanEntry;
 import org.bukkit.BanList;
+import org.spongepowered.api.service.ban.BanService;
+import org.spongepowered.api.util.ban.Ban;
 
 import java.util.Date;
 import java.util.Set;
 
-//TODO: skeleton implementation
 public class PoreBanList implements BanList {
+
+    private final BanService banService;
+    private final Type type;
+
+    protected PoreBanList(BanService banService, Type type) {
+        this.banService = banService;
+        this.type = type;
+    }
 
     @Override
     public BanEntry getBanEntry(String target) {
@@ -46,7 +56,22 @@ public class PoreBanList implements BanList {
 
     @Override
     public Set<BanEntry> getBanEntries() {
-        throw new NotImplementedException("TODO");
+        Set<BanEntry> bans = Sets.newHashSet();
+
+        switch (type) {
+            case NAME:
+                for (Ban.User ban : banService.getUserBans()) {
+                    bans.add(PoreBanEntry.of(ban));
+                }
+                break;
+            case IP:
+                for (Ban.Ip ban : banService.getIpBans()) {
+                    bans.add(PoreBanEntry.of(ban));
+                }
+                break;
+        }
+
+        return bans;
     }
 
     @Override

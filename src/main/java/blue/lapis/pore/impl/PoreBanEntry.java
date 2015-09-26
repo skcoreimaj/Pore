@@ -39,63 +39,72 @@ public class PoreBanEntry extends PoreWrapper<Ban> implements BanEntry {
         return WrapperConverter.of(PoreBanEntry.class, handle);
     }
 
+    private String target, source, reason;
+    private Date created, expiration;
+
     protected PoreBanEntry(Ban handle) {
         super(handle);
+        switch (handle.getType()) {
+            case IP_BAN:
+                this.target = ((Ban.Ip) handle).getAddress().getCanonicalHostName();
+                break;
+            case USER_BAN:
+                this.target = ((Ban.User) handle).getUser().getName();
+                break;
+        }
+        this.source = handle.getSource().get().getName();
+        this.reason = handle.getReason().getContent();
+        this.created = handle.getStartDate();
+        this.expiration = handle.getExpirationDate().orNull();
     }
 
     @Override
     public String getTarget() {
-        throw new NotImplementedException("TODO");
+        return this.target;
     }
 
     @Override
     public Date getCreated() {
-        return getHandle().getStartDate();
+        return this.created;
     }
 
     @Override
     public void setCreated(Date created) {
-        throw new NotImplementedException("TODO");
+        this.created = created;
     }
 
     @Override
     public String getSource() {
-        if (!getHandle().getSource().isPresent()) {
-            return null;
-        }
-        return getHandle().getSource().get().getName();
+        return this.source;
     }
 
     @Override
     public void setSource(String source) {
-        throw new NotImplementedException("TODO");
+        this.source = source;
     }
 
     @Override
     public Date getExpiration() {
-        if (!getHandle().getExpirationDate().isPresent()) {
-            return null;
-        }
-        return getHandle().getExpirationDate().get();
+        return this.expiration;
     }
 
     @Override
     public void setExpiration(Date expiration) {
-        throw new NotImplementedException("TODO");
+        this.expiration = expiration;
     }
 
     @Override
     public String getReason() {
-        return getHandle().getReason().toString();
+        return this.reason;
     }
 
     @Override
     public void setReason(String reason) {
-        throw new NotImplementedException("TODO");
+        this.reason = reason;
     }
 
     @Override
     public void save() {
-        throw new NotImplementedException("TODO");
+        // Correct me if I'm wrong, but Sponge doesn't seem to have the ability to change bans.
     }
 }
