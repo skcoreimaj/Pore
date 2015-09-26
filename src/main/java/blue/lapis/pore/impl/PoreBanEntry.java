@@ -52,7 +52,11 @@ public class PoreBanEntry extends PoreWrapper<Ban> implements BanEntry {
                 this.target = ((Ban.User) handle).getUser().getName();
                 break;
         }
-        this.source = handle.getSource().get().getName();
+        if (handle.getSource().isPresent()) {
+            this.source = handle.getSource().get().getName();
+        } else {
+            this.source = null;
+        }
         this.reason = handle.getReason().getContent();
         this.created = handle.getStartDate();
         this.expiration = handle.getExpirationDate().orNull();
@@ -106,5 +110,6 @@ public class PoreBanEntry extends PoreWrapper<Ban> implements BanEntry {
     @Override
     public void save() {
         // Correct me if I'm wrong, but Sponge doesn't seem to have the ability to change bans.
+        // Perhaps remove the original Ban and create a new one?
     }
 }
