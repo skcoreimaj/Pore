@@ -24,6 +24,7 @@
  */
 package blue.lapis.pore.impl;
 
+import blue.lapis.pore.Pore;
 import blue.lapis.pore.PoreVersion;
 import blue.lapis.pore.converter.wrapper.WrapperConverter;
 import blue.lapis.pore.impl.command.PoreCommandMap;
@@ -40,6 +41,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.NotImplementedException;
+import org.bukkit.BanEntry;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -82,6 +84,7 @@ import org.bukkit.util.CachedServerIcon;
 import org.bukkit.util.StringUtil;
 import org.bukkit.util.permissions.DefaultPermissions;
 import org.spongepowered.api.Game;
+import org.spongepowered.api.service.ban.BanService;
 import org.spongepowered.api.text.Texts;
 import org.spongepowered.api.util.command.source.ConsoleSource;
 
@@ -98,6 +101,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class PoreServer extends PoreWrapper<org.spongepowered.api.Server> implements Server {
 
@@ -584,7 +588,8 @@ public class PoreServer extends PoreWrapper<org.spongepowered.api.Server> implem
 
     @Override
     public Set<String> getIPBans() {
-        throw new NotImplementedException("TODO");
+        return this.getBanList(BanList.Type.IP).getBanEntries()
+                .stream().map(BanEntry::getTarget).collect(Collectors.toSet());
     }
 
     @Override
@@ -604,7 +609,7 @@ public class PoreServer extends PoreWrapper<org.spongepowered.api.Server> implem
 
     @Override
     public BanList getBanList(BanList.Type type) {
-        throw new NotImplementedException("TODO");
+        return new PoreBanList(Pore.getGame().getServiceManager().provide(BanService.class).get(), type);
     }
 
     @Override
